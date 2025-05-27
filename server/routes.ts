@@ -1,0 +1,175 @@
+import type { Express } from "express";
+import { createServer, type Server } from "http";
+import { storage } from "./storage";
+import { insertOperationSchema } from "@shared/schema";
+import { z } from "zod";
+
+export async function registerRoutes(app: Express): Promise<Server> {
+  // Get all operations
+  app.get("/api/operations", async (req, res) => {
+    try {
+      const operations = await storage.getOperations();
+      res.json(operations);
+    } catch (error) {
+      res.status(500).json({ message: "Failed to fetch operations" });
+    }
+  });
+
+  // Get operations by type
+  app.get("/api/operations/type/:type", async (req, res) => {
+    try {
+      const { type } = req.params;
+      const operations = await storage.getOperationsByType(type);
+      res.json(operations);
+    } catch (error) {
+      res.status(500).json({ message: "Failed to fetch operations by type" });
+    }
+  });
+
+  // Get operations by date range
+  app.get("/api/operations/range", async (req, res) => {
+    try {
+      const { startDate, endDate } = req.query;
+      
+      if (!startDate || !endDate) {
+        return res.status(400).json({ message: "startDate and endDate are required" });
+      }
+
+      const start = new Date(startDate as string);
+      const end = new Date(endDate as string);
+      
+      if (isNaN(start.getTime()) || isNaN(end.getTime())) {
+        return res.status(400).json({ message: "Invalid date format" });
+      }
+
+      const operations = await storage.getOperationsByDateRange(start, end);
+      res.json(operations);
+    } catch (error) {
+      res.status(500).json({ message: "Failed to fetch operations by date range" });
+    }
+  });
+
+  // Create new operation
+  app.post("/api/operations", async (req, res) => {
+    try {
+      const validatedData = insertOperationSchema.parse(req.body);
+      const operation = await storage.createOperation(validatedData);
+      res.status(201).json(operation);
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ 
+          message: "Validation failed", 
+          errors: error.errors 
+        });
+      }
+      res.status(500).json({ message: "Failed to create operation" });
+    }
+  });
+
+  // Update operation
+  app.put("/api/operations/:id", async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      if (isNaN(id)) {
+        return res.status(400).json({ message: "Invalid operation ID" });
+      }
+
+      const validatedData = insertOperationSchema.partial().parse(req.body);
+      const operation = await storage.updateOperation(id, validatedData);
+      
+      if (!operation) {
+        return res.status(404).json({ message: "Operation not found" });
+      }
+
+      res.json(operation);
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ 
+          message: "Validation failed", 
+          errors: error.errors 
+        });
+      }
+      res.status(500).json({ message: "Failed to update operation" });
+    }
+  });
+
+  // Delete operation
+  app.delete("/api/operations/:id", async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      if (isNaN(id)) {
+        return res.status(400).json({ message: "Invalid operation ID" });
+      }
+
+      const deleted = await storage.deleteOperation(id);
+      
+      if (!deleted) {
+        return res.status(404).json({ message: "Operation not found" });
+      }
+
+      res.json({ message: "Operation deleted successfully" });
+    } catch (error) {
+      res.status(500).json({ message: "Failed to delete operation" });
+    }
+  });
+
+  // Get dashboard metrics
+  app.get("/api/dashboard/metrics", async (req, res) => {
+    try {
+      const operations = await storage.getOperations();
+      
+      // Calculate totals by type
+      const purchases = operations.filter(op => op.type === "purchase");
+      const sales = operations.filter(op => op.type === "sale");
+      const drying = operations.filter(op => op.type === "drying");
+      const feed = operations.filter(op => op.type === "feed");
+
+      const totalPurchased = purchases.reduce((sum, op) => sum + parseFloat(op.quantity), 0);
+      const totalSold = sales.reduce((sum, op) => sum + parseFloat(op.quantity), 0);
+      const totalDried = drying.reduce((sum, op) => sum + parseFloat(op.quantity), 0);
+      const totalFeed = feed.reduce((sum, op) => sum + parseFloat(op.quantity), 0);
+
+      const totalSales = sales.reduce((sum, op) => sum + parseFloat(op.value), 0);
+      const totalPurchaseCost = purchases.reduce((sum, op) => sum + parseFloat(op.value), 0);
+      const totalProcessingCost = drying.reduce((sum, op) => sum + parseFloat(op.value), 0) + 
+                                  feed.reduce((sum, op) => sum + parseFloat(op.value), 0);
+
+      const totalOutput = totalSold + totalDried + totalFeed;
+      const operationalBalance = totalPurchased - totalOutput;
+      const monthlyProfit = totalSales - totalPurchaseCost - totalProcessingCost;
+
+      // Get today's operations
+      const today = new Date();
+      const startOfDay = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+      const endOfDay = new Date(today.getFullYear(), today.getMonth(), today.getDate() + 1);
+      
+      const todayOperations = operations.filter(op => 
+        op.createdAt >= startOfDay && op.createdAt < endOfDay
+      );
+
+      const pendingOperations = operations.filter(op => op.status === "pending");
+
+      const metrics = {
+        totalInventory: totalPurchased - totalOutput,
+        monthlyProfit,
+        operationalBalance,
+        todayOperations: todayOperations.length,
+        pendingOperations: pendingOperations.length,
+        flow: {
+          purchase: totalPurchased,
+          sales: totalSold,
+          drying: totalDried,
+          feed: totalFeed,
+          balance: operationalBalance
+        }
+      };
+
+      res.json(metrics);
+    } catch (error) {
+      res.status(500).json({ message: "Failed to fetch dashboard metrics" });
+    }
+  });
+
+  const httpServer = createServer(app);
+  return httpServer;
+}
