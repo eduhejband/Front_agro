@@ -1,0 +1,76 @@
+package com.example.agro.controller;
+
+import com.example.agro.dto.CreateOperationDTO;
+import com.example.agro.dto.OperationDTO;
+import com.example.agro.enums.OperationType;
+import com.example.agro.service.OperationService;
+import jakarta.validation.Valid;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.format.annotation.DateTimeFormat;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.validation.annotation.Validated;
+import org.springframework.web.bind.annotation.*;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import java.time.LocalDate;
+import java.util.List;
+
+@RestController
+@RequestMapping("/operations")
+@Validated
+@Tag(name = "Operations", description = "Gestão de Operações de Milho")
+@CrossOrigin(origins = "http://localhost:3000") // ou a porta do seu frontend
+public class OperationController {
+
+    @Autowired
+    private OperationService operationService;
+
+    @GetMapping
+    @Operation(summary = "Listar todas as operações", description = "Retorna todas as operações ordenadas por data de criação (mais recente primeiro)")
+    public ResponseEntity<List<OperationDTO>> getAllOperations() {
+        List<OperationDTO> operations = operationService.findAll();
+        return ResponseEntity.ok(operations);
+    }
+
+    @GetMapping("/type/{type}")
+    @Operation(summary = "Buscar operações por tipo")
+    public ResponseEntity<List<OperationDTO>> getOperationsByType(
+            @PathVariable OperationType type) {
+        List<OperationDTO> operations = operationService.findByType(type);
+        return ResponseEntity.ok(operations);
+    }
+
+    @GetMapping("/range")
+    @Operation(summary = "Buscar operações por período")
+    public ResponseEntity<List<OperationDTO>> getOperationsByDateRange(
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate) {
+        List<OperationDTO> operations = operationService.findByDateRange(startDate, endDate);
+        return ResponseEntity.ok(operations);
+    }
+
+    @PostMapping
+    @Operation(summary = "Criar nova operação")
+    public ResponseEntity<OperationDTO> createOperation(
+            @Valid @RequestBody CreateOperationDTO createDTO) {
+        OperationDTO operation = operationService.create(createDTO);
+        return ResponseEntity.status(HttpStatus.CREATED).body(operation);
+    }
+
+    @PutMapping("/{id}")
+    @Operation(summary = "Atualizar operação")
+    public ResponseEntity<OperationDTO> updateOperation(
+            @PathVariable Long id,
+            @Valid @RequestBody CreateOperationDTO updateDTO) {
+        OperationDTO operation = operationService.update(id, updateDTO);
+        return ResponseEntity.ok(operation);
+    }
+
+    @DeleteMapping("/{id}")
+    @Operation(summary = "Deletar operação")
+    public ResponseEntity<Void> deleteOperation(@PathVariable Long id) {
+        operationService.delete(id);
+        return ResponseEntity.noContent().build();
+    }
+}
