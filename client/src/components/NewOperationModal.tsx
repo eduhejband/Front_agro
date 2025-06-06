@@ -32,7 +32,7 @@ export function NewOperationModal({ open, onOpenChange }: NewOperationModalProps
 
   const createOperationMutation = useMutation({
     mutationFn: async (data: InsertOperation) => {
-      const response = await apiRequest("POST", "/api/operations", data);
+      const response = await apiRequest("POST", "/operations", data);
       return response.json();
     },
     onSuccess: () => {
