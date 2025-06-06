@@ -158,7 +158,7 @@ export function HistoryTable({ operations }: HistoryTableProps) {
                 filteredOperations.map((operation) => (
                   <TableRow key={operation.id}>
                     <TableCell className="whitespace-nowrap text-sm text-gray-900">
-                      {format(operation.createdAt, "dd/MM/yyyy HH:mm", { locale: ptBR })}
+                      {format(new Date(operation.createdAt), "dd/MM/yyyy HH:mm", { locale: ptBR })}
                     </TableCell>
                     <TableCell>
                       <Badge variant="secondary" className={getTypeColor(operation.type)}>

@@ -1,16 +1,10 @@
 import { Card, CardContent } from "@/components/ui/card";
 import { Warehouse, TrendingUp, Scale, Activity } from "lucide-react";
 
-interface Metrics {
-  totalInventory: number;
-  monthlyProfit: number;
-  operationalBalance: number;
-  todayOperations: number;
-  pendingOperations: number;
-}
+import type { DashboardMetrics } from "@shared/schema";
 
 interface MetricCardsProps {
-  metrics: Metrics;
+  metrics: DashboardMetrics;
   isLoading?: boolean;
 }
 

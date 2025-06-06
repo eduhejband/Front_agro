@@ -9,17 +9,17 @@ import { FlowSection } from "@/components/FlowSection";
 import { HistoryTable } from "@/components/HistoryTable";
 import { NewOperationModal } from "@/components/NewOperationModal";
 import { Sprout, BarChart3, Plus, History, Settings } from "lucide-react";
-import type { Operation } from "@shared/schema";
+import type { Operation, DashboardMetrics } from "@shared/schema";
 
 export default function Dashboard() {
   const [isModalOpen, setIsModalOpen] = useState(false);
 
   const { data: operations = [], isLoading: operationsLoading } = useQuery<Operation[]>({
-    queryKey: ["/api/operations"],
+    queryKey: ["/operations"],
   });
 
-  const { data: metrics, isLoading: metricsLoading } = useQuery({
-    queryKey: ["/api/dashboard/metrics"],
+  const { data: metrics, isLoading: metricsLoading } = useQuery<DashboardMetrics>({
+    queryKey: ["/dashboard/metrics"],
   });
 
   return (

@@ -9,16 +9,16 @@ interface OutputChartProps {
 export function OutputChart({ operations }: OutputChartProps) {
   const getOutputData = () => {
     const sales = operations
-      .filter(op => op.type === "sale")
-      .reduce((sum, op) => sum + parseFloat(op.quantity), 0);
+      .filter(op => op.type === "SALE")
+      .reduce((sum, op) => sum + op.quantity, 0);
 
     const drying = operations
-      .filter(op => op.type === "drying")
-      .reduce((sum, op) => sum + parseFloat(op.quantity), 0);
+      .filter(op => op.type === "DRYING")
+      .reduce((sum, op) => sum + op.quantity, 0);
 
     const feed = operations
-      .filter(op => op.type === "feed")
-      .reduce((sum, op) => sum + parseFloat(op.quantity), 0);
+      .filter(op => op.type === "FEED")
+      .reduce((sum, op) => sum + op.quantity, 0);
 
     return [
       { name: 'Venda', value: sales, color: '#4CAF50' },

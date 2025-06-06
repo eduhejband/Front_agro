@@ -23,17 +23,18 @@ export function OperationsChart({ operations }: OperationsChartProps) {
       const monthStart = startOfMonth(monthDate);
       const monthEnd = endOfMonth(monthDate);
 
-      const monthOperations = operations.filter(op => 
-        op.createdAt >= monthStart && op.createdAt <= monthEnd
-      );
+      const monthOperations = operations.filter(op => {
+        const opDate = new Date(op.createdAt);
+        return opDate >= monthStart && opDate <= monthEnd;
+      });
 
       const purchases = monthOperations
-        .filter(op => op.type === "purchase")
-        .reduce((sum, op) => sum + parseFloat(op.quantity), 0);
+        .filter(op => op.type === "PURCHASE")
+        .reduce((sum, op) => sum + op.quantity, 0);
 
       const sales = monthOperations
-        .filter(op => op.type === "sale")
-        .reduce((sum, op) => sum + parseFloat(op.quantity), 0);
+        .filter(op => op.type === "SALE")
+        .reduce((sum, op) => sum + op.quantity, 0);
 
       data.push({
         month: format(monthDate, "MMM", { locale: ptBR }),

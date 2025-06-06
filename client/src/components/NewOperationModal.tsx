@@ -36,8 +36,8 @@ export function NewOperationModal({ open, onOpenChange }: NewOperationModalProps
       return response.json();
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/operations"] });
-      queryClient.invalidateQueries({ queryKey: ["/api/dashboard/metrics"] });
+      queryClient.invalidateQueries({ queryKey: ["/operations"] });
+      queryClient.invalidateQueries({ queryKey: ["/dashboard/metrics"] });
       toast({
         title: "Sucesso",
         description: "Operação criada com sucesso!",
