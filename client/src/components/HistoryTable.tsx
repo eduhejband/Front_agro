@@ -19,19 +19,19 @@ export function HistoryTable({ operations }: HistoryTableProps) {
 
   const filteredOperations = operations.filter(op => {
     const typeMatch = typeFilter === "all" || op.type === typeFilter;
-    const dateMatch = !dateFilter || format(op.createdAt, "yyyy-MM-dd") === dateFilter;
+    const dateMatch = !dateFilter || format(new Date(op.createdAt), "yyyy-MM-dd") === dateFilter;
     return typeMatch && dateMatch;
   });
 
   const getTypeIcon = (type: string) => {
     switch (type) {
-      case "purchase":
+      case "PURCHASE":
         return <Truck className="mr-1" size={14} />;
-      case "sale":
+      case "SALE":
         return <DollarSign className="mr-1" size={14} />;
-      case "drying":
+      case "DRYING":
         return <Sun className="mr-1" size={14} />;
-      case "feed":
+      case "FEED":
         return <Wheat className="mr-1" size={14} />;
       default:
         return null;
@@ -40,13 +40,13 @@ export function HistoryTable({ operations }: HistoryTableProps) {
 
   const getTypeName = (type: string) => {
     switch (type) {
-      case "purchase":
+      case "PURCHASE":
         return "Compra";
-      case "sale":
+      case "SALE":
         return "Venda";
-      case "drying":
+      case "DRYING":
         return "Secagem";
-      case "feed":
+      case "FEED":
         return "Ração";
       default:
         return type;
@@ -55,13 +55,13 @@ export function HistoryTable({ operations }: HistoryTableProps) {
 
   const getTypeColor = (type: string) => {
     switch (type) {
-      case "purchase":
+      case "PURCHASE":
         return "bg-blue-100 text-blue-800";
-      case "sale":
+      case "SALE":
         return "bg-green-100 text-green-800";
-      case "drying":
+      case "DRYING":
         return "bg-orange-100 text-orange-800";
-      case "feed":
+      case "FEED":
         return "bg-yellow-100 text-yellow-800";
       default:
         return "bg-gray-100 text-gray-800";
@@ -70,11 +70,11 @@ export function HistoryTable({ operations }: HistoryTableProps) {
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case "completed":
+      case "COMPLETED":
         return "bg-green-100 text-green-800";
-      case "pending":
+      case "PENDING":
         return "bg-yellow-100 text-yellow-800";
-      case "in_progress":
+      case "IN_PROGRESS":
         return "bg-blue-100 text-blue-800";
       default:
         return "bg-gray-100 text-gray-800";
@@ -83,26 +83,26 @@ export function HistoryTable({ operations }: HistoryTableProps) {
 
   const getStatusName = (status: string) => {
     switch (status) {
-      case "completed":
+      case "COMPLETED":
         return "Concluído";
-      case "pending":
+      case "PENDING":
         return "Pendente";
-      case "in_progress":
+      case "IN_PROGRESS":
         return "Em andamento";
       default:
         return status;
     }
   };
 
-  const formatCurrency = (value: string) => {
+  const formatCurrency = (value: number) => {
     return new Intl.NumberFormat('pt-BR', {
       style: 'currency',
       currency: 'BRL'
-    }).format(parseFloat(value));
+    }).format(value);
   };
 
-  const formatQuantity = (value: string) => {
-    return `${parseFloat(value).toLocaleString('pt-BR')} ton`;
+  const formatQuantity = (value: number) => {
+    return `${value.toLocaleString('pt-BR')} ton`;
   };
 
   return (
@@ -125,10 +125,10 @@ export function HistoryTable({ operations }: HistoryTableProps) {
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">Todos os tipos</SelectItem>
-                <SelectItem value="purchase">Compra</SelectItem>
-                <SelectItem value="sale">Venda</SelectItem>
-                <SelectItem value="drying">Secagem</SelectItem>
-                <SelectItem value="feed">Ração</SelectItem>
+                <SelectItem value="PURCHASE">Compra</SelectItem>
+                <SelectItem value="SALE">Venda</SelectItem>
+                <SelectItem value="DRYING">Secagem</SelectItem>
+                <SelectItem value="FEED">Ração</SelectItem>
               </SelectContent>
             </Select>
           </div>

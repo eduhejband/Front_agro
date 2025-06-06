@@ -60,13 +60,13 @@ export function NewOperationModal({ open, onOpenChange }: NewOperationModalProps
 
   const getLocationPlaceholder = (type: string) => {
     switch (type) {
-      case "purchase":
+      case "PURCHASE":
         return "Ex: Fazenda São José";
-      case "sale":
+      case "SALE":
         return "Ex: Cooperativa ABC";
-      case "drying":
+      case "DRYING":
         return "Ex: Secador Central";
-      case "feed":
+      case "FEED":
         return "Ex: Fábrica de Ração Sul";
       default:
         return "Digite a origem/destino";
@@ -93,10 +93,10 @@ export function NewOperationModal({ open, onOpenChange }: NewOperationModalProps
                 <SelectValue placeholder="Selecione o tipo" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="purchase">Compra</SelectItem>
-                <SelectItem value="sale">Venda</SelectItem>
-                <SelectItem value="drying">Secagem</SelectItem>
-                <SelectItem value="feed">Ração</SelectItem>
+                <SelectItem value="PURCHASE">Compra</SelectItem>
+                <SelectItem value="SALE">Venda</SelectItem>
+                <SelectItem value="DRYING">Secagem</SelectItem>
+                <SelectItem value="FEED">Ração</SelectItem>
               </SelectContent>
             </Select>
             {form.formState.errors.type && (
@@ -111,7 +111,7 @@ export function NewOperationModal({ open, onOpenChange }: NewOperationModalProps
               type="number"
               step="0.01"
               placeholder="0.00"
-              {...form.register("quantity")}
+              {...form.register("quantity", { valueAsNumber: true })}
             />
             {form.formState.errors.quantity && (
               <p className="text-sm text-red-500 mt-1">{form.formState.errors.quantity.message}</p>
@@ -125,7 +125,7 @@ export function NewOperationModal({ open, onOpenChange }: NewOperationModalProps
               type="number"
               step="0.01"
               placeholder="0.00"
-              {...form.register("value")}
+              {...form.register("value", { valueAsNumber: true })}
             />
             {form.formState.errors.value && (
               <p className="text-sm text-red-500 mt-1">{form.formState.errors.value.message}</p>
@@ -154,9 +154,9 @@ export function NewOperationModal({ open, onOpenChange }: NewOperationModalProps
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="completed">Concluído</SelectItem>
-                <SelectItem value="pending">Pendente</SelectItem>
-                <SelectItem value="in_progress">Em andamento</SelectItem>
+                <SelectItem value="COMPLETED">Concluído</SelectItem>
+                <SelectItem value="PENDING">Pendente</SelectItem>
+                <SelectItem value="IN_PROGRESS">Em andamento</SelectItem>
               </SelectContent>
             </Select>
           </div>
