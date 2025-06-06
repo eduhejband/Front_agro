@@ -1,0 +1,147 @@
+Testando as APIs no Insomnia
+
+Vou te ajudar a testar ambas as APIs (Dashboard e Operations) no Insomnia. Primeiro, vamos configurar o ambiente e depois criar as requisições.
+Configuração Inicial
+
+    Certifique-se que seu servidor Spring Boot está rodando (normalmente na porta 8080)
+
+    Abra o Insomnia e crie um novo projeto chamado "Agro API"
+
+    Crie um ambiente (Environment) com a variável base_url apontando para http://localhost:8080
+
+Testando a API de Dashboard
+1. Obter métricas do dashboard
+
+Requisição:
+
+    Método: GET
+
+    URL: {{base_url}}/dashboard/metrics
+
+Headers:
+
+    Accept: application/json
+
+Resultado esperado:
+Você deve receber um JSON com as métricas do dashboard no formato DashboardMetricsDTO.
+Testando a API de Operations
+1. Listar todas as operações
+
+Requisição:
+
+    Método: GET
+
+    URL: {{base_url}}/operations
+
+Headers:
+
+    Accept: application/json
+
+2. Buscar operações por tipo
+
+Requisição:
+
+    Método: GET
+
+    URL: {{base_url}}/operations/type/{type}
+
+Substitua {type} por um dos valores válidos do enum OperationType (por exemplo: PLANTING, HARVESTING, etc.)
+3. Buscar operações por período
+
+Requisição:
+
+    Método: GET
+
+    URL: {{base_url}}/operations/range?startDate=2023-01-01&endDate=2023-12-31
+
+Headers:
+
+    Accept: application/json
+
+4. Criar nova operação
+
+Requisição:
+
+    Método: POST
+
+    URL: {{base_url}}/operations
+
+    Body (JSON):
+
+json
+
+{
+  "type": "PLANTING",
+  "date": "2023-05-15",
+  "quantity": 1000,
+  "price": 5.50,
+  "description": "Plantio de milho safra 2023"
+}
+
+Headers:
+
+    Content-Type: application/json
+
+    Accept: application/json
+
+5. Atualizar operação
+
+Requisição:
+
+    Método: PUT
+
+    URL: {{base_url}}/operations/{id} (substitua {id} pelo ID real da operação)
+
+    Body (JSON):
+
+json
+
+{
+  "type": "HARVESTING",
+  "date": "2023-09-20",
+  "quantity": 950,
+  "price": 6.20,
+  "description": "Colheita atualizada"
+}
+
+Headers:
+
+    Content-Type: application/json
+
+    Accept: application/json
+
+6. Deletar operação
+
+Requisição:
+
+    Método: DELETE
+
+    URL: {{base_url}}/operations/{id} (substitua {id} pelo ID real da operação)
+
+Dicas para testar no Insomnia
+
+    Crie uma coleção para cada controller (Dashboard e Operations)
+
+    Organize as requisições em pastas (GET, POST, PUT, DELETE)
+
+    Use variáveis de ambiente para o base_url
+
+    Para requisições POST/PUT, salve exemplos de JSON no Insomnia para reutilização
+
+    Para testar a validação, tente enviar dados inválidos e verifique as respostas de erro
+
+Fluxo recomendado de teste:
+
+    Primeiro crie algumas operações com POST
+
+    Liste todas com GET /operations
+
+    Filtre por tipo e data
+
+    Atualize uma operação existente
+
+    Finalmente, delete uma operação
+
+    Teste o dashboard depois de ter várias operações criadas
+
+Se precisar de exemplos mais específicos ou tiver algum problema durante os testes, posso te ajudar com mais detalhes!
