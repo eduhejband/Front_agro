@@ -22,11 +22,11 @@ export function NewOperationModal({ open, onOpenChange }: NewOperationModalProps
   const form = useForm<InsertOperation>({
     resolver: zodResolver(insertOperationSchema),
     defaultValues: {
-      type: "purchase",
-      quantity: "",
-      value: "",
+      type: "PURCHASE",
+      quantity: 0,
+      value: 0,
       location: "",
-      status: "completed",
+      status: "COMPLETED",
     },
   });
 

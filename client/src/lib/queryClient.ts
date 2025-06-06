@@ -9,9 +9,13 @@ async function throwIfResNotOk(res: Response) {
 
 export async function apiRequest(
   method: string,
-  url: string,
+  endpoint: string,
   data?: unknown | undefined,
 ): Promise<Response> {
+  // Spring Boot API base URL
+  const baseUrl = "http://localhost:8080/api";
+  const url = endpoint.startsWith("http") ? endpoint : `${baseUrl}${endpoint}`;
+  
   const res = await fetch(url, {
     method,
     headers: data ? { "Content-Type": "application/json" } : {},
@@ -29,7 +33,12 @@ export const getQueryFn: <T>(options: {
 }) => QueryFunction<T> =
   ({ on401: unauthorizedBehavior }) =>
   async ({ queryKey }) => {
-    const res = await fetch(queryKey[0] as string, {
+    // Spring Boot API base URL
+    const baseUrl = "http://localhost:8080/api";
+    const endpoint = queryKey[0] as string;
+    const url = endpoint.startsWith("http") ? endpoint : `${baseUrl}${endpoint}`;
+    
+    const res = await fetch(url, {
       credentials: "include",
     });
 

@@ -1,44 +1,53 @@
-import { pgTable, text, serial, integer, decimal, timestamp } from "drizzle-orm/pg-core";
-import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
 
-export const operations = pgTable("operations", {
-  id: serial("id").primaryKey(),
-  type: text("type").notNull(), // "purchase", "sale", "drying", "feed"
-  quantity: decimal("quantity", { precision: 10, scale: 2 }).notNull(),
-  value: decimal("value", { precision: 12, scale: 2 }).notNull(),
-  location: text("location").notNull(),
-  status: text("status").notNull().default("completed"), // "completed", "pending", "in_progress"
-  createdAt: timestamp("created_at").notNull().defaultNow(),
-});
+// Spring Boot Operation types
+export const OperationType = {
+  PURCHASE: "PURCHASE",
+  SALE: "SALE", 
+  DRYING: "DRYING",
+  FEED: "FEED"
+} as const;
 
-export const insertOperationSchema = createInsertSchema(operations).pick({
-  type: true,
-  quantity: true,
-  value: true,
-  location: true,
-  status: true,
-}).extend({
-  type: z.enum(["purchase", "sale", "drying", "feed"]),
-  quantity: z.string().min(1, "Quantidade é obrigatória"),
-  value: z.string().min(1, "Valor é obrigatório"),
-  location: z.string().min(1, "Origem/Destino é obrigatório"),
-  status: z.enum(["completed", "pending", "in_progress"]).default("completed"),
+export const OperationStatus = {
+  COMPLETED: "COMPLETED",
+  PENDING: "PENDING",
+  IN_PROGRESS: "IN_PROGRESS"
+} as const;
+
+// Operation interface matching Spring Boot OperationDTO
+export interface Operation {
+  id: number;
+  type: keyof typeof OperationType;
+  quantity: number;
+  value: number;
+  location: string;
+  status: keyof typeof OperationStatus;
+  createdAt: string; // ISO date string from Spring Boot
+}
+
+// Create operation schema for forms
+export const insertOperationSchema = z.object({
+  type: z.enum(["PURCHASE", "SALE", "DRYING", "FEED"]),
+  quantity: z.number().min(0.01, "Quantidade deve ser maior que zero"),
+  value: z.number().min(0.01, "Valor deve ser maior que zero"),
+  location: z.string().min(1, "Localização é obrigatória"),
+  status: z.enum(["COMPLETED", "PENDING", "IN_PROGRESS"]).default("COMPLETED"),
 });
 
 export type InsertOperation = z.infer<typeof insertOperationSchema>;
-export type Operation = typeof operations.$inferSelect;
 
-export const users = pgTable("users", {
-  id: serial("id").primaryKey(),
-  username: text("username").notNull().unique(),
-  password: text("password").notNull(),
-});
-
-export const insertUserSchema = createInsertSchema(users).pick({
-  username: true,
-  password: true,
-});
-
-export type InsertUser = z.infer<typeof insertUserSchema>;
-export type User = typeof users.$inferSelect;
+// Dashboard metrics interface matching Spring Boot
+export interface DashboardMetrics {
+  totalInventory: number;
+  monthlyProfit: number;
+  operationalBalance: number;
+  todayOperations: number;
+  pendingOperations: number;
+  flow: {
+    purchase: number;
+    sales: number;
+    drying: number;
+    feed: number;
+    balance: number;
+  };
+}

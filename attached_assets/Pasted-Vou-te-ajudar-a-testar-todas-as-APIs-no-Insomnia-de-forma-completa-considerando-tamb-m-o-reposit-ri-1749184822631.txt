@@ -1,0 +1,204 @@
+Vou te ajudar a testar todas as APIs no Insomnia de forma completa, considerando também o repositório e as configurações que você compartilhou.
+Configuração Inicial no Insomnia
+
+    Crie um novo workspace no Insomnia chamado "Agro API"
+
+    Configure as variáveis de ambiente:
+
+        base_url: http://localhost:8080/api (note o /api do context-path)
+
+    Crie duas subpastas: Dashboard e Operations
+
+Testando a API de Dashboard
+GET /dashboard/metrics
+
+Requisição:
+
+    Método: GET
+
+    URL: {{base_url}}/dashboard/metrics
+
+O que testar:
+
+    Verifique se retorna um JSON com as métricas calculadas
+
+    Confira se os valores correspondem às operações existentes no banco
+
+    Teste após criar/alterar/excluir operações para ver as mudanças
+
+Testando a API de Operations
+1. GET /operations
+
+Requisição:
+
+    Método: GET
+
+    URL: {{base_url}}/operations
+
+Verificações:
+
+    Ordenação por created_at (mais recente primeiro)
+
+    Estrutura completa do OperationDTO
+
+    Paginação (se aplicável)
+
+2. GET /operations/type/{type}
+
+Requisição:
+
+    Método: GET
+
+    URL: {{base_url}}/operations/type/PLANTING (teste com outros tipos também)
+
+Verificações:
+
+    Filtro correto por tipo
+
+    Ordenação mantida
+
+    Resposta vazia quando não houver operações do tipo
+
+3. GET /operations/range
+
+Requisição:
+
+    Método: GET
+
+    URL: {{base_url}}/operations/range?startDate=2023-01-01&endDate=2023-12-31
+
+Casos de teste:
+
+    Intervalo com operações
+
+    Intervalo sem operações
+
+    Data inicial > data final (deve retornar erro)
+
+    Formato de data inválido
+
+4. POST /operations
+
+Requisição:
+
+    Método: POST
+
+    URL: {{base_url}}/operations
+
+    Body (JSON):
+
+json
+
+{
+  "type": "HARVESTING",
+  "date": "2023-08-20",
+  "quantity": 1500,
+  "price": 7.80,
+  "description": "Colheita de milho safra 2023"
+}
+
+Testes importantes:
+
+    Validação de campos obrigatórios
+
+    Tipos de dados incorretos
+
+    Valores negativos em quantity/price
+
+    Response status 201 Created
+
+    Location header com URL do novo recurso
+
+5. PUT /operations/{id}
+
+Requisição:
+
+    Método: PUT
+
+    URL: {{base_url}}/operations/1 (use um ID existente)
+
+    Body (JSON):
+
+json
+
+{
+  "type": "HARVESTING",
+  "date": "2023-08-25",
+  "quantity": 1600,
+  "price": 8.20,
+  "description": "Colheita atualizada"
+}
+
+Verificações:
+
+    Atualização de todos os campos
+
+    Tentativa de atualizar com ID inexistente
+
+    Validações como no POST
+
+6. DELETE /operations/{id}
+
+Requisição:
+
+    Método: DELETE
+
+    URL: {{base_url}}/operations/1
+
+O que testar:
+
+    Status 204 No Content
+
+    Tentativa de excluir operação inexistente
+
+    Verifique se realmente excluiu (com GET após DELETE)
+
+Fluxo Completo de Testes Recomendado
+
+    Crie 3-4 operações diferentes com POST
+
+    Liste todas com GET /operations
+
+    Filtre por tipo e intervalo de datas
+
+    Atualize uma das operações criadas
+
+    Exclua uma operação
+
+    Verifique o dashboard após todas essas operações
+
+    Repita o ciclo com dados diferentes
+
+Dicas para Testes Efetivos
+
+    Variáveis no Insomnia: Armazene o ID de operações criadas em variáveis para reutilização
+
+    Environment: Configure diferentes ambientes (dev, test, prod) se aplicável
+
+    Testes de Erro:
+
+        Tente criar operações com dados inválidos
+
+        Tente atualizar com IDs inexistentes
+
+        Teste formatos de data incorretos
+
+    Swagger UI: Acesse http://localhost:8080/api/swagger para documentação interativa
+
+Exemplo de Teste com o Repository
+
+Para verificar se os dados estão sendo persistidos corretamente:
+
+    Crie uma operação via POST
+
+    Faça GET /operations e note o ID
+
+    Consulte diretamente no PostgreSQL:
+
+sql
+
+SELECT * FROM operation WHERE id = [ID_DA_OPERACAO];
+
+Isso ajuda a verificar se o repositório está funcionando como esperado.
+
+Precisa de mais detalhes sobre algum teste específico ou algum aspecto das APIs?
