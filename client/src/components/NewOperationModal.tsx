@@ -9,6 +9,7 @@ import { insertOperationSchema, type InsertOperation, type Operation } from "@sh
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
+import { useEffect } from "react";
 
 interface NewOperationModalProps {
   open: boolean;
@@ -16,9 +17,10 @@ interface NewOperationModalProps {
   editingOperation?: Operation | null;
 }
 
-export function NewOperationModal({ open, onOpenChange }: NewOperationModalProps) {
+export function NewOperationModal({ open, onOpenChange, editingOperation }: NewOperationModalProps) {
   const { toast } = useToast();
   const queryClient = useQueryClient();
+  const isEditing = !!editingOperation;
 
   const form = useForm<InsertOperation>({
     resolver: zodResolver(insertOperationSchema),
@@ -31,9 +33,34 @@ export function NewOperationModal({ open, onOpenChange }: NewOperationModalProps
     },
   });
 
-  const createOperationMutation = useMutation({
+  // Reset form when modal opens/closes or when editing operation changes
+  useEffect(() => {
+    if (open) {
+      if (editingOperation) {
+        form.reset({
+          type: editingOperation.type,
+          quantity: editingOperation.quantity,
+          value: editingOperation.value,
+          location: editingOperation.location,
+          status: editingOperation.status,
+        });
+      } else {
+        form.reset({
+          type: "PURCHASE",
+          quantity: 0,
+          value: 0,
+          location: "",
+          status: "COMPLETED",
+        });
+      }
+    }
+  }, [open, editingOperation, form]);
+
+  const operationMutation = useMutation({
     mutationFn: async (data: InsertOperation) => {
-      const response = await apiRequest("POST", "/operations", data);
+      const endpoint = isEditing ? `/operations/${editingOperation.id}` : "/operations";
+      const method = isEditing ? "PUT" : "POST";
+      const response = await apiRequest(method, endpoint, data);
       return response.json();
     },
     onSuccess: () => {
@@ -41,7 +68,7 @@ export function NewOperationModal({ open, onOpenChange }: NewOperationModalProps
       queryClient.invalidateQueries({ queryKey: ["/dashboard/metrics"] });
       toast({
         title: "Sucesso",
-        description: "Operação criada com sucesso!",
+        description: isEditing ? "Operação atualizada com sucesso!" : "Operação criada com sucesso!",
       });
       form.reset();
       onOpenChange(false);
@@ -49,14 +76,14 @@ export function NewOperationModal({ open, onOpenChange }: NewOperationModalProps
     onError: (error: any) => {
       toast({
         title: "Erro",
-        description: error.message || "Erro ao criar operação",
+        description: error.message || (isEditing ? "Erro ao atualizar operação" : "Erro ao criar operação"),
         variant: "destructive",
       });
     },
   });
 
   const onSubmit = (data: InsertOperation) => {
-    createOperationMutation.mutate(data);
+    operationMutation.mutate(data);
   };
 
   const getLocationPlaceholder = (type: string) => {
@@ -80,7 +107,7 @@ export function NewOperationModal({ open, onOpenChange }: NewOperationModalProps
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-md">
         <DialogHeader>
-          <DialogTitle>Nova Operação</DialogTitle>
+          <DialogTitle>{isEditing ? 'Editar Operação' : 'Nova Operação'}</DialogTitle>
         </DialogHeader>
         
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
@@ -174,9 +201,9 @@ export function NewOperationModal({ open, onOpenChange }: NewOperationModalProps
             <Button 
               type="submit" 
               className="flex-1 bg-green-600 hover:bg-green-700"
-              disabled={createOperationMutation.isPending}
+              disabled={operationMutation.isPending}
             >
-              {createOperationMutation.isPending ? "Salvando..." : "Salvar"}
+              {operationMutation.isPending ? (isEditing ? "Atualizando..." : "Salvando...") : (isEditing ? "Atualizar" : "Salvar")}
             </Button>
           </div>
         </form>

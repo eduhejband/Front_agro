@@ -13,6 +13,7 @@ import type { Operation, DashboardMetrics } from "@shared/schema";
 
 export default function Dashboard() {
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [editingOperation, setEditingOperation] = useState<Operation | null>(null);
 
   const { data: operations = [], isLoading: operationsLoading } = useQuery<Operation[]>({
     queryKey: ["/operations"],
