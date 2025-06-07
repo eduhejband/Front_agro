@@ -15,6 +15,30 @@ export default function Dashboard() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingOperation, setEditingOperation] = useState<Operation | null>(null);
 
+  const openNewOperationModal = () => {
+    setEditingOperation(null);
+    setIsModalOpen(true);
+  };
+
+  const openEditOperationModal = (operation: Operation) => {
+    setEditingOperation(operation);
+    setIsModalOpen(true);
+  };
+
+  const handleModalClose = (open: boolean) => {
+    setIsModalOpen(open);
+    if (!open) {
+      setEditingOperation(null);
+    }
+  };
+
+  const scrollToHistory = () => {
+    const historySection = document.getElementById('history-section');
+    if (historySection) {
+      historySection.scrollIntoView({ behavior: 'smooth' });
+    }
+  };
+
   const { data: operations = [], isLoading: operationsLoading } = useQuery<Operation[]>({
     queryKey: ["/operations"],
   });
@@ -44,19 +68,18 @@ export default function Dashboard() {
             </a>
             <button 
               className="w-full flex items-center space-x-3 px-4 py-3 text-gray-600 hover:bg-gray-100 rounded-lg transition-colors"
-              onClick={() => setIsModalOpen(true)}
+              onClick={openNewOperationModal}
             >
               <Plus size={18} />
               <span>Nova Operação</span>
             </button>
-            <a href="#" className="flex items-center space-x-3 px-4 py-3 text-gray-600 hover:bg-gray-100 rounded-lg transition-colors">
+            <button 
+              className="w-full flex items-center space-x-3 px-4 py-3 text-gray-600 hover:bg-gray-100 rounded-lg transition-colors"
+              onClick={scrollToHistory}
+            >
               <History size={18} />
               <span>Histórico</span>
-            </a>
-            <a href="#" className="flex items-center space-x-3 px-4 py-3 text-gray-600 hover:bg-gray-100 rounded-lg transition-colors">
-              <Settings size={18} />
-              <span>Configurações</span>
-            </a>
+            </button>
           </nav>
         </SidebarContent>
       </Sidebar>
@@ -101,14 +124,17 @@ export default function Dashboard() {
           )}
 
           {/* History Table */}
-          <HistoryTable operations={operations} />
+          <div id="history-section">
+            <HistoryTable operations={operations} onEditOperation={openEditOperationModal} />
+          </div>
         </div>
       </div>
 
       {/* New Operation Modal */}
       <NewOperationModal 
         open={isModalOpen} 
-        onOpenChange={setIsModalOpen} 
+        onOpenChange={handleModalClose}
+        editingOperation={editingOperation}
       />
     </div>
   );
