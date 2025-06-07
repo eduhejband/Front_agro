@@ -5,7 +5,7 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { insertOperationSchema, type InsertOperation } from "@shared/schema";
+import { insertOperationSchema, type InsertOperation, type Operation } from "@shared/schema";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
@@ -13,6 +13,7 @@ import { useToast } from "@/hooks/use-toast";
 interface NewOperationModalProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  editingOperation?: Operation | null;
 }
 
 export function NewOperationModal({ open, onOpenChange }: NewOperationModalProps) {

@@ -2,20 +2,27 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Operation } from "@shared/schema";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { useState } from "react";
-import { Truck, DollarSign, Sun, Wheat } from "lucide-react";
+import { Truck, DollarSign, Sun, Wheat, Edit2, Trash2 } from "lucide-react";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { apiRequest } from "@/lib/queryClient";
+import { useToast } from "@/hooks/use-toast";
 
 interface HistoryTableProps {
   operations: Operation[];
+  onEditOperation: (operation: Operation) => void;
 }
 
-export function HistoryTable({ operations }: HistoryTableProps) {
+export function HistoryTable({ operations, onEditOperation }: HistoryTableProps) {
   const [typeFilter, setTypeFilter] = useState("all");
   const [dateFilter, setDateFilter] = useState("");
+  const { toast } = useToast();
+  const queryClient = useQueryClient();
 
   const filteredOperations = operations.filter(op => {
     const typeMatch = typeFilter === "all" || op.type === typeFilter;
@@ -105,6 +112,33 @@ export function HistoryTable({ operations }: HistoryTableProps) {
     return `${value.toLocaleString('pt-BR')} ton`;
   };
 
+  const deleteOperationMutation = useMutation({
+    mutationFn: async (id: number) => {
+      await apiRequest("DELETE", `/operations/${id}`);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/operations"] });
+      queryClient.invalidateQueries({ queryKey: ["/dashboard/metrics"] });
+      toast({
+        title: "Sucesso",
+        description: "Operação deletada com sucesso!",
+      });
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Erro",
+        description: error.message || "Erro ao deletar operação",
+        variant: "destructive",
+      });
+    },
+  });
+
+  const handleDeleteOperation = (operation: Operation) => {
+    if (confirm(`Tem certeza que deseja deletar a operação ${getTypeName(operation.type)} de ${formatQuantity(operation.quantity)}?`)) {
+      deleteOperationMutation.mutate(operation.id);
+    }
+  };
+
   return (
     <Card className="border border-gray-200">
       <CardHeader>
@@ -145,12 +179,13 @@ export function HistoryTable({ operations }: HistoryTableProps) {
                 <TableHead>Valor</TableHead>
                 <TableHead>Origem/Destino</TableHead>
                 <TableHead>Status</TableHead>
+                <TableHead className="text-center">Ações</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {filteredOperations.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={6} className="text-center py-8 text-gray-500">
+                  <TableCell colSpan={7} className="text-center py-8 text-gray-500">
                     Nenhuma operação encontrada
                   </TableCell>
                 </TableRow>
@@ -179,6 +214,27 @@ export function HistoryTable({ operations }: HistoryTableProps) {
                       <Badge variant="secondary" className={getStatusColor(operation.status)}>
                         {getStatusName(operation.status)}
                       </Badge>
+                    </TableCell>
+                    <TableCell className="text-center">
+                      <div className="flex items-center justify-center space-x-2">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => onEditOperation(operation)}
+                          className="h-8 w-8 p-0"
+                        >
+                          <Edit2 className="h-4 w-4" />
+                        </Button>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => handleDeleteOperation(operation)}
+                          disabled={deleteOperationMutation.isPending}
+                          className="h-8 w-8 p-0 text-red-600 hover:text-red-700 hover:bg-red-50"
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      </div>
                     </TableCell>
                   </TableRow>
                 ))
