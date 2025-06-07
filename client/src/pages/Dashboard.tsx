@@ -8,11 +8,13 @@ import { OutputChart } from "@/components/OutputChart";
 import { FlowSection } from "@/components/FlowSection";
 import { HistoryTable } from "@/components/HistoryTable";
 import { NewOperationModal } from "@/components/NewOperationModal";
+import { ExportModal } from "@/components/ExportModal";
 import { Sprout, BarChart3, Plus, History, Settings } from "lucide-react";
 import type { Operation, DashboardMetrics } from "@shared/schema";
 
 export default function Dashboard() {
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isExportModalOpen, setIsExportModalOpen] = useState(false);
   const [editingOperation, setEditingOperation] = useState<Operation | null>(null);
 
   const openNewOperationModal = () => {
@@ -37,6 +39,10 @@ export default function Dashboard() {
     if (historySection) {
       historySection.scrollIntoView({ behavior: 'smooth' });
     }
+  };
+
+  const openExportModal = () => {
+    setIsExportModalOpen(true);
   };
 
   const { data: operations = [], isLoading: operationsLoading } = useQuery<Operation[]>({
@@ -101,7 +107,7 @@ export default function Dashboard() {
                 <Plus className="mr-2" size={16} />
                 Nova Operação
               </Button>
-              <Button variant="outline">
+              <Button variant="outline" onClick={openExportModal}>
                 <span>Exportar</span>
               </Button>
             </div>
@@ -135,6 +141,13 @@ export default function Dashboard() {
         open={isModalOpen} 
         onOpenChange={handleModalClose}
         editingOperation={editingOperation}
+      />
+
+      {/* Export Modal */}
+      <ExportModal
+        open={isExportModalOpen}
+        onOpenChange={setIsExportModalOpen}
+        operations={operations}
       />
     </div>
   );
