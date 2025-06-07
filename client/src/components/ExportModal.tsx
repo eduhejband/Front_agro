@@ -10,14 +10,8 @@ import { Operation } from "@shared/schema";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import jsPDF from "jspdf";
-import "jspdf-autotable";
+import 'jspdf-autotable';
 import { useState } from "react";
-
-declare module "jspdf" {
-  interface jsPDF {
-    autoTable: (options: any) => jsPDF;
-  }
-}
 
 interface ExportModalProps {
   open: boolean;
@@ -150,7 +144,7 @@ export function ExportModal({ open, onOpenChange, operations }: ExportModalProps
       ]);
 
       // Tabela de operações
-      doc.autoTable({
+      (doc as any).autoTable({
         head: [['Data/Hora', 'Tipo', 'Quantidade', 'Valor', 'Local', 'Status']],
         body: tableData,
         startY: 60,

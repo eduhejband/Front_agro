@@ -55,14 +55,9 @@ export function OutputChart({ operations }: OutputChartProps) {
   return (
     <Card className="border border-gray-200">
       <CardHeader>
-        <div className="flex items-center justify-between">
-          <CardTitle className="text-lg font-semibold text-gray-800">
-            Distribuição de Saídas
-          </CardTitle>
-          <button className="text-green-600 text-sm hover:text-green-700">
-            Ver detalhes
-          </button>
-        </div>
+        <CardTitle className="text-lg font-semibold text-gray-800">
+          Distribuição de Saídas
+        </CardTitle>
       </CardHeader>
       <CardContent>
         <ResponsiveContainer width="100%" height={300}>
