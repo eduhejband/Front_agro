@@ -10,7 +10,6 @@ import { Operation } from "@shared/schema";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import jsPDF from "jspdf";
-import 'jspdf-autotable';
 import { useState } from "react";
 
 interface ExportModalProps {
@@ -133,47 +132,65 @@ export function ExportModal({ open, onOpenChange, operations }: ExportModalProps
       doc.text(`Período: ${format(startDate, "dd/MM/yyyy", { locale: ptBR })} à ${format(endDate, "dd/MM/yyyy", { locale: ptBR })}`, 20, 35);
       doc.text(`Gerado em: ${format(new Date(), "dd/MM/yyyy HH:mm", { locale: ptBR })}`, 20, 45);
 
-      // Preparar dados da tabela
-      const tableData = filteredOperations.map(op => [
-        format(new Date(op.createdAt), "dd/MM/yyyy HH:mm", { locale: ptBR }),
-        getTypeName(op.type),
-        formatQuantity(op.quantity),
-        formatCurrency(op.value),
-        op.location,
-        getStatusName(op.status)
-      ]);
+      // Título da seção
+      doc.setFontSize(14);
+      doc.text("Operações do Período", 20, 60);
 
-      // Tabela de operações
-      (doc as any).autoTable({
-        head: [['Data/Hora', 'Tipo', 'Quantidade', 'Valor', 'Local', 'Status']],
-        body: tableData,
-        startY: 60,
-        styles: {
-          fontSize: 9,
-          cellPadding: 3,
-        },
-        headStyles: {
-          fillColor: [34, 197, 94],
-          textColor: 255,
-          fontStyle: 'bold',
-        },
-        alternateRowStyles: {
-          fillColor: [249, 250, 251],
-        },
+      // Cabeçalho da "tabela"
+      doc.setFontSize(10);
+      doc.setFont("helvetica", 'bold');
+      doc.text("Data/Hora", 20, 75);
+      doc.text("Tipo", 55, 75);
+      doc.text("Qtd", 85, 75);
+      doc.text("Valor", 110, 75);
+      doc.text("Local", 140, 75);
+      doc.text("Status", 170, 75);
+
+      // Linha separadora
+      doc.line(20, 78, 190, 78);
+
+      // Dados das operações
+      doc.setFont("helvetica", 'normal');
+      let yPosition = 85;
+
+      filteredOperations.forEach((op, index) => {
+        if (yPosition > 270) { // Nova página se necessário
+          doc.addPage();
+          yPosition = 20;
+        }
+
+        doc.text(format(new Date(op.createdAt), "dd/MM HH:mm", { locale: ptBR }), 20, yPosition);
+        doc.text(getTypeName(op.type), 55, yPosition);
+        doc.text(`${op.quantity.toLocaleString('pt-BR')} t`, 85, yPosition);
+        doc.text(formatCurrency(op.value), 110, yPosition);
+        doc.text(op.location.substring(0, 15), 140, yPosition);
+        doc.text(getStatusName(op.status), 170, yPosition);
+        
+        yPosition += 8;
       });
 
-      // Cálculo do saldo do período
+      // Resumo do período
       const { totalValue, totalQuantity } = calculateBalance(filteredOperations);
-      const finalY = (doc as any).lastAutoTable.finalY + 20;
+      yPosition += 15;
 
-      // Resumo financeiro
+      if (yPosition > 250) {
+        doc.addPage();
+        yPosition = 20;
+      }
+
       doc.setFontSize(14);
-      doc.text("Resumo do Período", 20, finalY);
+      doc.setFont(undefined, 'bold');
+      doc.text("Resumo do Período", 20, yPosition);
+      yPosition += 15;
 
       doc.setFontSize(12);
-      doc.text(`Total de Operações: ${filteredOperations.length}`, 20, finalY + 15);
-      doc.text(`Saldo de Estoque: ${formatQuantity(totalQuantity)}`, 20, finalY + 25);
-      doc.text(`Saldo Financeiro: ${formatCurrency(totalValue)}`, 20, finalY + 35);
+      doc.setFont(undefined, 'normal');
+      doc.text(`Total de Operações: ${filteredOperations.length}`, 20, yPosition);
+      yPosition += 10;
+      doc.text(`Saldo de Estoque: ${formatQuantity(totalQuantity)}`, 20, yPosition);
+      yPosition += 10;
+      doc.text(`Saldo Financeiro: ${formatCurrency(totalValue)}`, 20, yPosition);
+      yPosition += 20;
 
       // Breakdown por tipo
       const purchases = filteredOperations.filter(op => op.type === "PURCHASE");
@@ -181,11 +198,18 @@ export function ExportModal({ open, onOpenChange, operations }: ExportModalProps
       const drying = filteredOperations.filter(op => op.type === "DRYING");
       const feed = filteredOperations.filter(op => op.type === "FEED");
 
-      doc.text("Breakdown por Tipo de Operação:", 20, finalY + 50);
-      doc.text(`• Compras: ${purchases.length} (${formatQuantity(purchases.reduce((sum, op) => sum + op.quantity, 0))})`, 25, finalY + 60);
-      doc.text(`• Vendas: ${sales.length} (${formatQuantity(sales.reduce((sum, op) => sum + op.quantity, 0))})`, 25, finalY + 70);
-      doc.text(`• Secagem: ${drying.length} (${formatQuantity(drying.reduce((sum, op) => sum + op.quantity, 0))})`, 25, finalY + 80);
-      doc.text(`• Ração: ${feed.length} (${formatQuantity(feed.reduce((sum, op) => sum + op.quantity, 0))})`, 25, finalY + 90);
+      doc.setFont(undefined, 'bold');
+      doc.text("Breakdown por Tipo de Operação:", 20, yPosition);
+      yPosition += 10;
+
+      doc.setFont(undefined, 'normal');
+      doc.text(`• Compras: ${purchases.length} operações (${formatQuantity(purchases.reduce((sum, op) => sum + op.quantity, 0))})`, 25, yPosition);
+      yPosition += 8;
+      doc.text(`• Vendas: ${sales.length} operações (${formatQuantity(sales.reduce((sum, op) => sum + op.quantity, 0))})`, 25, yPosition);
+      yPosition += 8;
+      doc.text(`• Secagem: ${drying.length} operações (${formatQuantity(drying.reduce((sum, op) => sum + op.quantity, 0))})`, 25, yPosition);
+      yPosition += 8;
+      doc.text(`• Ração: ${feed.length} operações (${formatQuantity(feed.reduce((sum, op) => sum + op.quantity, 0))})`, 25, yPosition);
 
       // Gerar nome do arquivo
       const fileName = `cornmanager_relatorio_${format(startDate, "dd-MM-yyyy", { locale: ptBR })}_a_${format(endDate, "dd-MM-yyyy", { locale: ptBR })}.pdf`;
