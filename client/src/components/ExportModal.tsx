@@ -179,12 +179,12 @@ export function ExportModal({ open, onOpenChange, operations }: ExportModalProps
       }
 
       doc.setFontSize(14);
-      doc.setFont(undefined, 'bold');
+      doc.setFont("helvetica", 'bold');
       doc.text("Resumo do Período", 20, yPosition);
       yPosition += 15;
 
       doc.setFontSize(12);
-      doc.setFont(undefined, 'normal');
+      doc.setFont("helvetica", 'normal');
       doc.text(`Total de Operações: ${filteredOperations.length}`, 20, yPosition);
       yPosition += 10;
       doc.text(`Saldo de Estoque: ${formatQuantity(totalQuantity)}`, 20, yPosition);
@@ -198,11 +198,11 @@ export function ExportModal({ open, onOpenChange, operations }: ExportModalProps
       const drying = filteredOperations.filter(op => op.type === "DRYING");
       const feed = filteredOperations.filter(op => op.type === "FEED");
 
-      doc.setFont(undefined, 'bold');
+      doc.setFont("helvetica", 'bold');
       doc.text("Breakdown por Tipo de Operação:", 20, yPosition);
       yPosition += 10;
 
-      doc.setFont(undefined, 'normal');
+      doc.setFont("helvetica", 'normal');
       doc.text(`• Compras: ${purchases.length} operações (${formatQuantity(purchases.reduce((sum, op) => sum + op.quantity, 0))})`, 25, yPosition);
       yPosition += 8;
       doc.text(`• Vendas: ${sales.length} operações (${formatQuantity(sales.reduce((sum, op) => sum + op.quantity, 0))})`, 25, yPosition);
